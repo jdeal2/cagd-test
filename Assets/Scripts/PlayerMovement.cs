@@ -4,22 +4,6 @@ using System.Collections;
 public class PlayerMovement : MonoBehaviour {
 
     /*
-     * TO DO:
-     * Movement
-     *      Should use the CharacterController which is already attached to this GameObject
-     *      Be able to move left and right
-     *      Collide with/be stopped by walls
-     *      Not move too quickly or slowly
-     *          Remember that movement happens every frame
-     * Jumping/Falling
-     *      Fall to the ground, and not through it
-     *      Able to jump
-     *      Can reach platforms to the right, but not the one on the left
-     *      Only able to jump while standing on the ground
-     * Input
-     *      Ideally, use the KeyboardInput script which is already attached to this GameObject
-     *      A & D for left and right movement
-     *      Space for jumping
      * Moving Platform
      *      When standing on the platform, the character should stay on it/move relative to the moving platform
      *      When not standing on the platform, revert to normal behavior
@@ -35,5 +19,44 @@ public class PlayerMovement : MonoBehaviour {
      *      A value to keep track of the player's movement speed and direction
      *      You will probably need to use the Update function as well as create functions for moving platforms and enemies
      */
+
+	public float speed = 9f;
+	public float gravity = 1.5f;
+	public float jumpSpeed = 30f;
+
+	private CharacterController controller;
+	private KeyboardInput input;
+	private Vector3 moveDir;
+	private bool grounded;
+
+	void Start(){
+		controller = GetComponent<CharacterController> ();
+		input = GetComponent<KeyboardInput> ();
+		moveDir = new Vector3 (0f, 0f, 0f);
+		grounded = false;
+	}
+
+	void Update(){
+		moveDir.x = Input.GetAxis("Horizontal") * speed;
+
+		if (input.JumpButtonPressed && this.grounded == true) {
+			moveDir.y = jumpSpeed;
+			this.grounded = false;
+		}
+		
+		if (!controller.isGrounded) {
+			moveDir.y -= gravity;
+		}
+		else {
+			moveDir.y = 0;
+			this.grounded = true;
+		}
+		
+		controller.Move (moveDir * Time.deltaTime);
+	}
+
+	void OnControllerColliderHit(ControllerColliderHit other){
+		transform.SetParent (other.transform);
+	}
 
 }
